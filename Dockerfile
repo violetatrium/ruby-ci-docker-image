@@ -1,4 +1,4 @@
-FROM arooneyva/ruby-docker-image:2.4.2
+FROM arooneyva/ruby-docker-image:2.4.2-2
 
 WORKDIR /tmp
 
