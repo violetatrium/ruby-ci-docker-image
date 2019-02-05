@@ -1,4 +1,4 @@
-FROM arooneyva/ruby-docker-image:2.5.3
+FROM minimsecure/ruby-docker-image:2.6.1
 
 WORKDIR /tmp
 
