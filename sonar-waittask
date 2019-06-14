@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+"""
+cat .scannerwork/report-task.txt
+
+projectKey=test-scan
+serverUrl=https://sonar.prod.minim.co
+serverVersion=6.7.0.33306
+dashboardUrl=https://sonar.prod.minim.co/dashboard/index/test-scan
+ceTaskId=AWtReStgvft-IoQmol_O
+ceTaskUrl=https://sonar.prod.minim.co/api/ce/task?id=AWtReStgvft-IoQmol_O
+
+
+
+https://${SONAR_PROD_TOKEN}@sonar.prod.minim.co/api/ce/task?id=AWtReStgvft-IoQmol_O
+
+{
+  "task": {
+    "id": "AWtReStgvft-IoQmol_O",
+    "type": "REPORT",
+    "componentId": "AWtReSqXvft-IoQmol_I",
+    "componentKey": "test-scan",
+    "componentName": "test-scan",
+    "componentQualifier": "TRK",
+    "analysisId": "AWtReTKcweLrtn5zNhna",
+    "status": "SUCCESS",
+    "submittedAt": "2019-06-13T15:33:43+0000",
+    "submitterLogin": "circleci-pipeline",
+    "startedAt": "2019-06-13T15:33:45+0000",
+    "executedAt": "2019-06-13T15:33:46+0000",
+    "executionTimeMs": 943,
+    "logs": false,
+    "hasScannerContext": true,
+    "organization": "default-organization"
+  }
+}
+
+
+"""
+import shlex
+import subprocess
+import argparse
+import json
+import os
+import time
+import logging
+
+logger = logging.getLogger('sonar-waittask')
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+
+def main():
+    sleep_time = 6
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("scan_report_file")
+    parser.add_argument("env_token_name")
+    args = parser.parse_args()
+
+    with open(args.scan_report_file, 'r') as fp:
+        scan_report_raw_data = fp.readlines()
+
+    scan_report_data = {}
+    for line in scan_report_raw_data:
+        line = line.strip()
+        if not line:
+            continue
+        key, value = line.split('=', 1)
+        scan_report_data[key] = value
+
+    scan_task_url = scan_report_data['ceTaskUrl']
+    request_url = scan_task_url.replace('://', '://{}@'.format(os.environ[args.env_token_name]))
+
+    scan_task_data = {}
+
+    task_check_count = 0
+    max_task_checks = 100
+    while task_check_count < max_task_checks:
+        task_check_count += 1
+        logger.info("Checking task status: {!r}".format(scan_task_url))
+
+        curl_process = subprocess.Popen(shlex.split("curl --connect-timeout 10 {}".format(request_url)),
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = curl_process.communicate()
+
+        if curl_process.returncode:
+            logger.error(stderr)
+            raise ValueError("something is wrong")
+
+        scan_task_data = json.loads(stdout.decode('utf-8'))
+
+        scan_status = scan_task_data['task']['status']
+        logger.info("Scan status: {!r}".format(scan_status))
+
+        if scan_status in ['SUCCESS', 'FAILED']:
+            break
+        else:
+            time.sleep(sleep_time)
+
+    pretty_data = json.dumps(scan_task_data, indent=2)
+    print(pretty_data)
+
+
+if __name__ == '__main__':
+    main()

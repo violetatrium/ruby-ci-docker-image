@@ -13,7 +13,7 @@ RUN apt-get update && apt-get -y dist-upgrade && \
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && \
     pip install --upgrade pip && \
-    pip install --upgrade awscli
+    pip install --upgrade awscli requests
 
 #install sonarqube
 ENV SONAR_SCANNER_VER 3.3.0.1492-linux
@@ -25,3 +25,5 @@ RUN curl -O https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sona
 #install docker
 COPY install-docker.sh ./
 RUN ./install-docker.sh
+
+COPY sonar-waittask /usr/local/bin/
