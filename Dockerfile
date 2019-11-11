@@ -1,4 +1,4 @@
-FROM minimsecure/ruby-docker-image:2.6.3-2-14-ge3fda1d-slim
+FROM minimsecure/ruby-docker-image:2.6.5-slim
 
 WORKDIR /tmp
 
@@ -25,5 +25,14 @@ RUN curl -O https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sona
 #install docker
 COPY install-docker.sh ./
 RUN ./install-docker.sh
+
+# Install Helm
+RUN curl -o helm-v2.16.0-linux-amd64.tar.gz https://get.helm.sh/helm-v2.16.0-linux-amd64.tar.gz && \
+    tar xzf helm-v2.16.0-linux-amd64.tar.gz && cp ./linux-amd64/helm /usr/local/bin/
+
+# Install kubectl
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl  && \
+    chmod +x ./kubectl && cp ./kubectl /usr/local/bin/
+
 
 COPY sonar-waittask /usr/local/bin/
