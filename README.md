@@ -1,13 +1,27 @@
 # ruby-ci-docker-image
-This is the Minim CI docker image that is bassed off of the base Minim Ruby docker iamge.
 
-# Building
+## Building
 ```
-usage: ./bin/push.sh [IMAGE_TAG]
+# To build the ruby docker image
+$ make image
+```
 
-A tool to build and push this docker container to dockerhub.
-You must be authenticated with docker have have access to the repo.
+Use the `VERSION` environment variable to build a specific tag
+```
+$ VERSION=2.7.1 make image
+```
 
-Arguments:
-  [IMAGE_TAG] - The tag name you want the image to have
+All builds will tag the version as well as `latest`.
+
+## Pushing Image
+To push the image to docker hub:
+```
+# To push the latest versions
+$ make docker/push/latest
+
+# To push the tagged versions
+$ make docker/push/version
+
+# To push both
+$ make docker/push
 ```
