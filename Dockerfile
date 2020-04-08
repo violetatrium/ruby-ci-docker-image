@@ -1,4 +1,4 @@
-FROM minimsecure/ruby-docker-image:2.7.1
+FROM minimsecure/ruby-docker-image:2.7.1-slim
 
 WORKDIR /tmp
 
@@ -33,6 +33,5 @@ RUN curl -o helm-v2.16.0-linux-amd64.tar.gz https://get.helm.sh/helm-v2.16.0-lin
 # Install kubectl
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl  && \
     chmod +x ./kubectl && cp ./kubectl /usr/local/bin/
-
 
 COPY sonar-waittask /usr/local/bin/
